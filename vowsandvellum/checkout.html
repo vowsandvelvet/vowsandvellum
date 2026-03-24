@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vows & Vellum | Secure Your Sanctuary</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400&family=Alex+Brush&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --ivory-bg: #F9F7F2; 
+    --charcoal: #1A1A1A;
+    --gold-muted: #B59B77;
+    --border: #e5e0d8;
+    --serif: 'Playfair Display', serif;
+    --sans: 'Montserrat', sans-serif;
+    --script: 'Alex Brush', cursive;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background-color: var(--ivory-bg);
+    color: var(--charcoal);
+    font-family: var(--sans);
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* GOLD DUST CANVAS */
+#gold-dust-canvas {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 1; opacity: 0.3;
+}
+
+/* LAYOUT CONTAINER */
+.checkout-wrapper {
+    position: relative; z-index: 10;
+    max-width: 700px; margin: 60px auto; padding: 20px;
+}
+.main-card {
+    background: white; padding: 50px;
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.03);
+}
+
+header { text-align: center; margin-bottom: 40px; }
+header h1 { font-family: var(--serif); text-transform: uppercase; letter-spacing: 4px; font-size: 1.8rem; }
+header .subtitle { font-family: var(--script); font-size: 2.2rem; color: var(--gold-muted); margin-top: 5px; }
+
+/* CART ITEMS */
+.cart-section { margin-bottom: 40px; }
+.item-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 0; border-bottom: 1px solid var(--border);
+}
+.item-details h4 { font-family: var(--serif); font-size: 1.1rem; font-weight: 400; }
+.item-details p { font-size: 0.85rem; color: var(--gold-muted); margin-top: 4px; }
+.item-actions { text-align: right; }
+.qty-controls { display: flex; align-items: center; gap: 15px; margin-bottom: 8px; }
+.qty-btn { background: none; border: 1px solid var(--border); width: 28px; height: 28px; cursor: pointer; color: var(--gold-muted); transition: 0.3s; }
+.qty-btn:hover { background: var(--ivory-bg); }
+.remove-btn { background: none; border: none; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #999; cursor: pointer; }
+
+/* FORM FIELDS */
+.form-section-title {
+    font-family: var(--serif); font-size: 0.85rem;
+    text-transform: uppercase; letter-spacing: 2px; color: var(--gold-muted);
+    margin: 40px 0 20px; display: flex; align-items: center; gap: 10px;
+}
+.form-section-title::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+input, select, textarea {
+    width: 100%; padding: 15px; margin-bottom: 15px;
+    border: 1px solid var(--border); background: var(--ivory-bg);
+    font-family: inherit; font-size: 0.9rem; outline: none; transition: 0.3s;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--gold-muted); background: #fff; }
+
+/* SUMMARY & PRICING */
+.summary-box { margin-top: 30px; }
+.summary-line { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; }
+.total-line { border-top: 2px solid var(--charcoal); padding-top: 20px; margin-top: 20px; font-family: var(--serif); font-size: 1.4rem; }
+
+/* BUTTONS */
+.btn { width: 100%; padding: 20px; text-transform: uppercase; letter-spacing: 3px; font-size: 0.8rem; cursor: pointer; transition: 0.4s; border: 1px solid var(--charcoal); margin-top: 15px; font-family: var(--sans); }
+.btn-black { background: var(--charcoal); color: white; }
+.btn-outline { background: transparent; color: var(--charcoal); }
+.btn:hover { transform: translateY(-2px); opacity: 0.9; }
+
+/* RECEIPT */
+#receipt-view { display: none; text-align: center; }
+.receipt-card {
+    background: var(--ivory-bg); padding: 40px; border: 1px dashed var(--gold-muted);
+    text-align: left; margin: 30px 0;
+}
+.receipt-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.9rem; }
+.status-badge { color: #2e7d32; font-weight: bold; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
+
+/* MOBILE */
+@media (max-width: 600px) {
+    .main-card { padding: 30px 20px; }
+    .item-row { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .item-actions { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="gold-dust-canvas"></canvas>
+
+<div class="checkout-wrapper">
+
+    <div class="main-card" id="checkout-view">
+        <header>
+            <h1>Secure Your Sanctuary</h1>
+            <div class="subtitle">Foundational Grace</div>
+        </header>
+
+        <div class="cart-section" id="cart-list"></div>
+
+        <div class="form-section-title">Customer Identity</div>
+        <input type="text" id="custName" placeholder="Full Name">
+        <input type="email" id="custEmail" placeholder="Email Address">
+        <input type="tel" id="custPhone" placeholder="WhatsApp Number">
+
+        <div class="form-section-title">Logistics Details</div>
+        <textarea id="custAddress" placeholder="Full Delivery Address" rows="3"></textarea>
+        <select id="tierSelect">
+            <option value="Standard Vault">Standard Tier</option>
+            <option value="Elite Vault">Elite Tier</option>
+            <option value="Deluxe Vault">Deluxe Tier (Full Sanctuary)</option>
+        </select>
+
+        <div class="summary-box">
+            <div class="summary-line"><span>Subtotal</span><span id="sub-val">₦0</span></div>
+            <div class="summary-line"><span>Logistics (Secure Courier)</span><span>₦5,000</span></div>
+            <div class="summary-line total-line"><span>Grand Total</span><span id="total-val">₦5,000</span></div>
+        </div>
+
+        <button class="btn btn-black" onclick="processPayment()">Confirm Legacy Purchase</button>
+        <button class="btn btn-outline" onclick="window.location.href='index.html'">Return to Shop</button>
+    </div>
+
+    <div class="main-card" id="receipt-view">
+        <div style="font-size: 40px; text-align:center; color: var(--gold-muted);">⚜</div>
+        <header>
+            <h1>Order Secured</h1>
+            <div class="subtitle">Peace of mind awaits.</div>
+        </header>
+
+        <div class="receipt-card" id="printable-receipt">
+            <p style="font-size: 0.7rem; color: var(--gold-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">V&V Digital Receipt</p>
+
+            <div class="receipt-row"><span>Record ID:</span><span id="rec-id" style="font-weight:bold;"></span></div>
+            <div class="receipt-row"><span>Date:</span><span id="rec-date"></span></div>
+            <div class="receipt-row"><span>Recipient:</span><span id="rec-name"></span></div>
+            <div class="receipt-row"><span>Vault Selection:</span><span id="rec-tier"></span></div>
+
+            <!-- Items Purchased -->
+            <div id="receipt-items" style="margin-top:15px; margin-bottom:15px;"></div>
+
+            <div class="receipt-row" style="margin-top:20px;">
+                <span>Payment:</span><span>Bank Transfer / Card (Verified)</span>
+            </div>
+            <div class="receipt-row" style="margin-top: 20px;">
+                <span>Logistics Status:</span>
+                <span class="status-badge">Preparing for Dispatch</span>
+            </div>
+        </div>
+
+        <p style="font-size: 0.85rem; line-height: 1.8; color: #666; margin-bottom: 30px;">
+            Your Order Tracking number is active. You will receive a WhatsApp message from our logistics concierge within the hour.
+        </p>
+
+        <button class="btn btn-black" onclick="window.print()">Print or Save as PDF</button>
+        <button class="btn btn-outline" onclick="window.location.href='index.html'">Back to Homepage</button>
+    </div>
+
+</div>
+
+<script>
+// CART & TIER PRICES
+let cart = JSON.parse(localStorage.getItem("cart")) || [
+    { id: 101, name: "The Bridal Emergency Vault", price: 150000, quantity: 1 }
+];
+
+const tierPrices = {
+    "Standard Vault": 35000,
+    "Elite Vault": 65000,
+    "Deluxe Vault": 140000
+};
+
+// RENDER CART
+function renderCart() {
+    const list = document.getElementById('cart-list');
+    list.innerHTML = "";
+    const tier = document.getElementById('tierSelect').value;
+    let sub = 0;
+
+    if(cart.length === 0){
+        list.innerHTML = "<p style='text-align:center; opacity:0.5;'>Your sanctuary is currently empty.</p>";
+    }
+
+    cart.forEach((item, index) => {
+        const price = tierPrices[tier] || item.price;
+        sub += price * item.quantity;
+        list.innerHTML += `
+            <div class="item-row">
+                <div class="item-details">
+                    <h4>${item.name}</h4>
+                    <p>₦${price.toLocaleString()}</p>
+                </div>
+                <div class="item-actions">
+                    <div class="qty-controls">
+                        <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
+                        <span>${item.quantity}</span>
+                        <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
+                    </div>
+                    <button class="remove-btn" onclick="removeItem(${index})">Remove from list</button>
+                </div>
+            </div>
+        `;
+    });
+
+    document.getElementById('sub-val').innerText = `₦${sub.toLocaleString()}`;
+    document.getElementById('total-val').innerText = `₦${(sub + 5000).toLocaleString()}`;
+
+    document.querySelector('.btn-black').disabled = cart.length === 0;
+}
+
+function updateQty(index, change) {
+    cart[index].quantity += change;
+    if (cart[index].quantity < 1) cart[index].quantity = 1;
+    renderCart();
+}
+
+function removeItem(index) {
+    cart.splice(index, 1);
+    renderCart();
+}
+
+// UPDATE ON TIER CHANGE
+document.getElementById('tierSelect').addEventListener('change', renderCart);
+
+// PROCESS PAYMENT & RECEIPT
+function processPayment() {
+    const name = document.getElementById('custName').value;
+    const address = document.getElementById('custAddress').value;
+    const tier = document.getElementById('tierSelect').value;
+
+    if (!name || !address) {
+        alert("Please share your name and delivery address for the dispatch team.");
+        return;
+    }
+
+    // Generate Receipt Data
+    document.getElementById('rec-id').innerText = 'VV-' + Math.floor(100000 + Math.random() * 900000);
+    document.getElementById('rec-name').innerText = name;
+    document.getElementById('rec-tier').innerText = tier;
+    document.getElementById('rec-date').innerText = new Date().toLocaleString();
+
+    // Populate purchased items
+    const receiptItems = document.getElementById('receipt-items');
+    receiptItems.innerHTML = "";
+    let subtotal = 0;
+    cart.forEach(item => {
+        const price = tierPrices[tier] || item.price;
+        const itemTotal = price * item.quantity;
+        subtotal += itemTotal;
+        const div = document.createElement("div");
+        div.className = "receipt-row";
+        div.innerHTML = `<span>${item.name} x${item.quantity}</span><span>₦${itemTotal.toLocaleString()}</span>`;
+        receiptItems.appendChild(div);
+    });
+    const totalDiv = document.createElement("div");
+    totalDiv.className = "receipt-row total-line";
+    totalDiv.innerHTML = `<span>Total Paid</span><span>₦${(subtotal + 5000).toLocaleString()}</span>`;
+    receiptItems.appendChild(totalDiv);
+
+    // Switch Views
+    document.getElementById('checkout-view').style.display = 'none';
+    document.getElementById('receipt-view').style.display = 'block';
+
+    // Cleanup
+    localStorage.removeItem("cart");
+    window.scrollTo(0,0);
+}
+
+// GOLD DUST SCRIPT
+const canvas = document.getElementById('gold-dust-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function initCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+
+class Particle {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 1.5;
+        this.speedX = Math.random() * 0.3 - 0.15;
+        this.speedY = Math.random() * 0.3 - 0.15;
+        this.opacity = Math.random() * 0.5;
+    }
+    update() {
+        this.x += this.speedX; this.y += this.speedY;
+        if (this.x > canvas.width) this.x = 0; else if (this.x < 0) this.x = canvas.width;
+        if (this.y > canvas.height) this.y = 0; else if (this.y < 0) this.y = canvas.height;
+    }
+    draw() {
+        ctx.fillStyle = `rgba(181, 155, 119, ${this.opacity})`;
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+    }
+}
+
+function createParticles() { 
+    for (let i = 0; i < Math.min(150, window.innerWidth / 8); i++) particles.push(new Particle()); 
+}
+
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animate);
+}
+
+window.addEventListener('resize', () => { initCanvas(); particles = []; createParticles(); });
+initCanvas(); createParticles(); animate();
+
+renderCart();
+</script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>The Velvet Vault</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:'Roboto',sans-serif;
+  background:#fdf6e3;
+  text-align:center;
+}
+
+h1{
+  font-family:'Great Vibes',cursive;
+  font-size:55px;
+  margin:30px 0;
+}
+
+/* GRID */
+.products{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:25px;
+  padding:20px;
+}
+
+.product{
+  background:white;
+  border-radius:15px;
+  padding:15px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.08);
+}
+
+/* BOX */
+.box{
+  height:200px;
+  border-radius:12px;
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(145deg,#3a2f2f,#1c1c1c);
+}
+
+/* COLOR VARIANTS */
+.box.ivory{ background:linear-gradient(145deg,#f8f4ec,#e8dfd2); }
+.box.pink{ background:linear-gradient(145deg,#f6e4e8,#e8cfd6); }
+.box.cream{ background:linear-gradient(145deg,#fdf1dc,#eadac1); }
+.box.black{ background:linear-gradient(145deg,#2a2a2a,#000); }
+
+/* GOLD FRAME EFFECT */
+.box::after{
+  content:'';
+  position:absolute;
+  inset:8px;
+  border:1px solid rgba(212,185,150,0.6);
+  border-radius:10px;
+}
+
+/* ITEMS */
+.item{
+  position:absolute;
+  width:28px;
+  opacity:0.9;
+}
+
+/* TEXT */
+h3{
+  margin:10px 0 5px;
+  font-size:18px;
+}
+
+.price{
+  font-weight:bold;
+  margin:5px 0;
+}
+
+select{
+  margin:5px;
+  padding:6px;
+  border-radius:6px;
+  border:1px solid #d4b996;
+}
+
+/* PAGINATION */
+.pagination{
+  margin:30px;
+}
+
+button{
+  padding:8px 12px;
+  margin:5px;
+  border:none;
+  background:#d4b996;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>The Velvet Vault</h1>
+
+<div class="products" id="grid"></div>
+<div class="pagination" id="pagination"></div>
+
+<script>
+
+/* 48 UNIQUE LUXURY NAMES */
+const names = [
+"Midnight Vow Vault","Ivory Promise Chest","Blush Serenity Box","Golden Whisper Case",
+"Pearl Essence Vault","Velvet Bloom Chest","Champagne Luxe Case","Eternal Grace Box",
+"Rose Opulence Vault","Diamond Aura Chest","Celestial Bride Case","Soft Glow Vault",
+"Moonlight Keepsake Box","Crystal Whisper Vault","Aurora Bridal Chest","Pure Elegance Case",
+"Silver Lining Vault","Royal Union Chest","Lace & Gold Case","Forever Bloom Vault",
+"Timeless Charm Chest","Sacred Vows Box","Golden Hour Vault","Ivory Kiss Chest",
+"Blissful Union Case","Radiant Bride Vault","Heirloom Grace Chest","Love Story Box",
+"Precious Moments Vault","Floral Whisper Chest","Enchanté Bridal Case","Velour Promise Box",
+"Signature Bride Vault","Grand Affair Chest","Opal Dream Case","Serenity Luxe Box",
+"True Love Vault","Couture Bride Chest","Refined Romance Case","Graceful Union Vault",
+"Ethereal Glow Chest","Promise & Pearl Case","Golden Keepsake Vault","Bridal Essence Chest",
+"Luxury Bloom Case","Timeless Bride Vault","Everlasting Charm Chest","Sacred Union Box"
+];
+
+/* TIERS */
+const tiers = {
+  Standard:{price:35000, items:3},
+  Elite:{price:65000, items:5},
+  Deluxe:{price:140000, items:7}
+};
+
+const icons = [
+"https://img.icons8.com/ios-filled/50/perfume.png",
+"https://img.icons8.com/ios-filled/50/fan.png",
+"https://img.icons8.com/ios-filled/50/phone.png",
+"https://img.icons8.com/ios-filled/50/first-aid-kit.png",
+"https://img.icons8.com/ios-filled/50/sewing-machine.png",
+"https://img.icons8.com/ios-filled/50/candy.png"
+];
+
+const perPage = 12;
+let page = 1;
+
+function render(){
+  const grid = document.getElementById("grid");
+  grid.innerHTML="";
+
+  const start = (page-1)*perPage;
+  const end = start+perPage;
+
+  names.slice(start,end).forEach(name=>{
+    const div = document.createElement("div");
+    div.className="product";
+
+    div.innerHTML=`
+      <div class="box ivory"></div>
+      <h3>${name}</h3>
+      <select onchange="changeTier(this)">
+        <option>Standard</option>
+        <option>Elite</option>
+        <option>Deluxe</option>
+      </select>
+      <select onchange="changeColor(this)">
+        <option value="ivory">Ivory</option>
+        <option value="black">Black</option>
+        <option value="pink">Pink</option>
+        <option value="cream">Cream</option>
+      </select>
+      <div class="price">₦35,000</div>
+    `;
+
+    grid.appendChild(div);
+    renderItems(div,"Standard");
+  });
+
+  renderPagination();
+}
+
+function renderItems(card,tier){
+  const box = card.querySelector(".box");
+  box.innerHTML="";
+
+  for(let i=0;i<tiers[tier].items;i++){
+    const img = document.createElement("img");
+    img.src = icons[i % icons.length];
+    img.className="item";
+
+    img.style.top = (20 + i*20) + "px";
+    img.style.left = (20 + (i%3)*50) + "px";
+
+    box.appendChild(img);
+  }
+}
+
+function changeTier(select){
+  const card = select.closest(".product");
+  const tier = select.value;
+
+  card.querySelector(".price").innerText =
+    "₦" + tiers[tier].price.toLocaleString();
+
+  renderItems(card,tier);
+}
+
+function changeColor(select){
+  const box = select.closest(".product").querySelector(".box");
+  box.className = "box " + select.value;
+}
+
+function renderPagination(){
+  const total = Math.ceil(names.length/perPage);
+  const container = document.getElementById("pagination");
+  container.innerHTML="";
+
+  for(let i=1;i<=total;i++){
+    const btn = document.createElement("button");
+    btn.innerText=i;
+    btn.onclick=()=>{page=i; render();};
+    container.appendChild(btn);
+  }
+}
+
+render();
+
+</script>
+
+</body>
+</html>

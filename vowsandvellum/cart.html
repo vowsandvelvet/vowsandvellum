@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Vows & Vellum Cart</title>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+
+<style>
+body {
+  background: #fff8f0;
+  color: #8c7c6c;
+  font-family: 'Libre Baskerville', serif;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+}
+
+h1 {
+  font-family: 'Dancing Script', cursive;
+  font-size: 70px;
+  margin: 30px 0 10px 0;
+  color: #d4a373;
+}
+
+h2 {
+  font-size: 22px;
+  margin: 20px 0;
+  color: #d4a373;
+}
+
+.cart-item {
+  border: 1px solid #d4a373;
+  padding: 15px;
+  margin: 15px auto;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 18px;
+  background: rgba(212, 163, 115, 0.05);
+  flex-wrap: wrap;
+}
+
+.item-info {
+  text-align: left;
+}
+
+.qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.qty-controls button {
+  background: #d4a373;
+  color: #fff8f0;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.qty-controls button:hover {
+  transform: scale(1.1);
+}
+
+.remove-btn {
+  margin-left: 10px;
+  background: none;
+  border: none;
+  color: #b9875e;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: underline;
+}
+
+.remove-btn:hover {
+  color: #8c7c6c;
+}
+
+.checkout {
+  margin-top: 30px;
+}
+
+.checkout button,
+.browse-btn {
+  background: #d4a373;
+  color: #fff8f0;
+  border: none;
+  padding: 12px 25px;
+  font-size: 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.checkout button:hover,
+.browse-btn:hover {
+  background: #b9875e;
+}
+
+#cart-message {
+  font-style: italic;
+  opacity: 0.6;
+  margin-top: 50px;
+  font-size: 1.1rem;
+}
+
+.totals {
+  margin-top: 25px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+  font-size: 18px;
+}
+
+.totals div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.totals .grand-total {
+  border-top: 2px solid #d4a373;
+  padding-top: 12px;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+@media(max-width: 500px){
+  .cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .qty-controls {
+    margin-top: 10px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>Your Sanctuary Cart</h1>
+
+<div id="cart-items"></div>
+
+<p id="cart-message">Your sanctuary is currently empty.</p>
+
+<div class="totals" id="totals-container" style="display:none;">
+  <div><span>Subtotal</span><span id="subtotal">₦0</span></div>
+  <div><span>Delivery</span><span>₦5,000</span></div>
+  <div class="grand-total"><span>Total Paid</span><span id="total">₦0</span></div>
+</div>
+
+<div class="checkout" id="checkout-container" style="display:none;">
+  <a href="checkout.html"><button id="checkout-btn">Proceed to Checkout</button></a>
+</div>
+
+<a href="products.html"><button class="browse-btn">Browse More Vaults</button></a>
+
+<script>
+// Load cart from localStorage
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+// Delivery fee
+const DELIVERY_FEE = 5000;
+
+// Render cart items and update totals
+function renderCart() {
+  const cartContainer = document.getElementById("cart-items");
+  const cartMessage = document.getElementById("cart-message");
+  const checkoutContainer = document.getElementById("checkout-container");
+  const totalsContainer = document.getElementById("totals-container");
+  const subtotalEl = document.getElementById("subtotal");
+  const totalEl = document.getElementById("total");
+
+  cartContainer.innerHTML = "";
+
+  if(cart.length === 0){
+    cartMessage.style.display = "block";
+    checkoutContainer.style.display = "none";
+    totalsContainer.style.display = "none";
+    subtotalEl.innerText = "₦0";
+    totalEl.innerText = "₦0";
+    return;
+  }
+
+  cartMessage.style.display = "none";
+  checkoutContainer.style.display = "block";
+  totalsContainer.style.display = "block";
+
+  let subtotal = 0;
+
+  cart.forEach((item, index) => {
+    item.quantity = item.quantity || 1; // default quantity
+    subtotal += item.price * item.quantity;
+
+    const div = document.createElement("div");
+    div.className = "cart-item";
+    div.innerHTML = `
+      <div class="item-info">
+        ${item.name} (₦${item.price.toLocaleString()})
+      </div>
+      <div class="qty-controls">
+        <button onclick="updateQty(${index}, -1)">-</button>
+        <span>${item.quantity}</span>
+        <button onclick="updateQty(${index}, 1)">+</button>
+        <button class="remove-btn" onclick="removeItem(${index})">Remove</button>
+      </div>
+    `;
+    cartContainer.appendChild(div);
+  });
+
+  subtotalEl.innerText = `₦${subtotal.toLocaleString()}`;
+  totalEl.innerText = `₦${(subtotal + DELIVERY_FEE).toLocaleString()}`;
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+}
+
+// Update quantity and recalc totals live
+function updateQty(index, change){
+  cart[index].quantity += change;
+  if(cart[index].quantity < 1){
+    cart.splice(index, 1); // remove if quantity < 1
+  }
+  renderCart();
+}
+
+// Remove item completely
+function removeItem(index){
+  cart.splice(index,1);
+  renderCart();
+}
+
+// Initialize
+renderCart();
+</script>
+
+</body>
+</html>
